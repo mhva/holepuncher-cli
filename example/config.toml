@@ -1,0 +1,114 @@
+#######################################################################
+# Runtime
+#######################################################################
+[runtime]
+
+# Server address e.g. "http://127.0.0.1:8080".
+server_address = "http://127.0.0.1:9000"
+
+# Protocol to use for communications with Holepuncher server.
+# Only protobuf is supported right now.
+client_proto = "protobuf"
+
+# Path to directory for storing runtime data. Can be relative.
+#
+# Supports variables. The following variables are supported:
+#  * ${HOME} - substituted with path to current user's home directory.
+#  * ${EXE}  - directory where holepuncher-cli resides.
+#  * ${AUTO} - OS-dependent path:
+#                - linux: $XDG_CONFIG_DIR/holepuncher
+#                - osx: ~/Library/Preferences/holepuncher
+#                - windows: %LOCALAPPDATA%/holepuncher)
+#              If ${AUTO} directory does not exist, it will be created
+#              automatically.
+runtime_dir = "${EXE}"
+
+# Cloud provider for hosting tunnel instance.
+provider = "linode"
+
+#######################################################################
+# Clients
+#######################################################################
+[client_protobuf]
+
+# 32-byte pre-shared server key encoded as hex string with no whitespace.
+# Example: cdd7217aa315719f2e048fbe2962dee80a51e43b24c41dc73e2d129b23db178f
+server_key = ""
+
+# 32-byte pre-shared peer key encoded as hex string with no whitespace.
+# Example: cdd7217aa315719f2e048fbe2962dee80a51e43b24c41dc73e2d129b23db178f
+peer_key = ""
+
+#######################################################################
+# Providers
+#######################################################################
+[provider_linode]
+
+# Linode access token that was produced in new Linode manager
+# at cloud.linode.com.
+access_token = ""
+
+# Linode region name where instance will be created. Use holepuncher-cli
+# to retrieve possible region names.
+# Example: eu-west
+region = ""
+
+# Linode instance type. Use holepuncher-cli to retrieve possible instance
+# types.
+# Example: g5-nanode-1
+plan = ""
+
+# [provider_digitalocean]
+# access_token = ""
+# region = ""
+# plan = ""
+
+#######################################################################
+# Users
+#######################################################################
+
+# Settings common to all users.
+[user_common]
+
+# A list of public SSH keys that will be able to access new instance.
+ssh_keys = [""]
+
+# Root user settings.
+[user_root]
+password = ""
+
+# Normal user settings. This user will be automatically created.
+[user_unpriv]
+username = ""
+password = ""
+
+#######################################################################
+# Censorship circumvention methods
+#######################################################################
+[wireguard]
+enable = false
+server_key = ""
+peer_keys = [""]
+
+# Port number for wireguard service. Set to 0 for the service to listen
+# on random port. Generated port number can be retrieved using
+# `holepuncher-cli var wireguard-port` command.
+port = 56000
+
+[obfsproxy_ipv4]
+enable = false
+secret = ""
+
+# Port number for obfsproxy service. Set to 0 for the service to listen
+# on random port. Generated port number can be retrieved using
+# `holepuncher-cli var obfs4-port` command.
+port = 56010
+
+[obfsproxy_ipv6]
+enable = false
+secret = ""
+
+# Port number for obfsproxy service. Set to 0 for the service to listen
+# on random port. Generated port number can be retrieved using
+# `holepuncher-cli var obfs6-port` command.
+port = 56011
