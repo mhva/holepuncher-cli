@@ -216,6 +216,15 @@ func handleListLinodeStackScripts(c *cli.Context) error {
 	return printLinodeResult(c, fn)
 }
 
+func initApp(c *cli.Context) error {
+	if c.Bool("verbose") {
+		log.SetLevel(log.DebugLevel)
+	} else {
+		log.SetLevel(log.InfoLevel)
+	}
+	return nil
+}
+
 func main() {
 	app := cli.NewApp()
 	app.Name = "holepuncher-cli"
@@ -226,7 +235,13 @@ func main() {
 			Name:  "config, c",
 			Usage: "config file",
 		},
+		cli.BoolFlag{
+			Name:  "verbose, v",
+			Usage: "verbose mode",
+		},
 	}
+	app.Before = initApp
+	app.HideVersion = true
 	app.Commands = []cli.Command{
 		{
 			Name:   "create",
