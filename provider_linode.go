@@ -88,7 +88,7 @@ func newLinodeProvider(client aHolepuncherClient, opts *programOptions) (*provid
 }
 
 func (p *providerLinode) CreateTunnel() (*createTunnelResult, error) {
-	generic, err := p.request(p.createCreateTunnelRequest())
+	generic, err := p.client.DoRequest(p.createCreateTunnelRequest())
 	if err != nil {
 		return nil, err
 	}
@@ -124,7 +124,7 @@ func (p *providerLinode) CreateTunnel() (*createTunnelResult, error) {
 }
 
 func (p *providerLinode) RebuildTunnel() (*rebuildTunnelResult, error) {
-	generic, err := p.request(p.createRebuildTunnelRequest())
+	generic, err := p.client.DoRequest(p.createRebuildTunnelRequest())
 	if err != nil {
 		return nil, err
 	}
@@ -160,7 +160,7 @@ func (p *providerLinode) RebuildTunnel() (*rebuildTunnelResult, error) {
 }
 
 func (p *providerLinode) DestroyTunnel() error {
-	generic, err := p.request(p.createDestroyTunnelRequest())
+	generic, err := p.client.DoRequest(p.createDestroyTunnelRequest())
 	if err != nil {
 		return err
 	}
@@ -178,7 +178,7 @@ func (p *providerLinode) DestroyTunnel() error {
 }
 
 func (p *providerLinode) TunnelStatus() (*tunnelInstance, error) {
-	generic, err := p.request(p.createTunnelStatusRequest())
+	generic, err := p.client.DoRequest(p.createTunnelStatusRequest())
 	if err != nil {
 		return nil, err
 	}
@@ -206,7 +206,7 @@ func (p *providerLinode) TunnelStatus() (*tunnelInstance, error) {
 }
 
 func (p *providerLinode) ListInstances() ([]*linodeInstance, error) {
-	generic, err := p.request(p.createListInstancesRequest())
+	generic, err := p.client.DoRequest(p.createListInstancesRequest())
 	if err != nil {
 		return nil, err
 	}
@@ -250,7 +250,7 @@ func (p *providerLinode) ListInstances() ([]*linodeInstance, error) {
 }
 
 func (p *providerLinode) ListPlans() ([]*linodePlan, error) {
-	generic, err := p.request(p.createListPlansRequest())
+	generic, err := p.client.DoRequest(p.createListPlansRequest())
 	if err != nil {
 		return nil, err
 	}
@@ -285,7 +285,7 @@ func (p *providerLinode) ListPlans() ([]*linodePlan, error) {
 }
 
 func (p *providerLinode) ListRegions() ([]*linodeRegion, error) {
-	generic, err := p.request(p.createListRegionsRequest())
+	generic, err := p.client.DoRequest(p.createListRegionsRequest())
 	if err != nil {
 		return nil, err
 	}
@@ -313,7 +313,7 @@ func (p *providerLinode) ListRegions() ([]*linodeRegion, error) {
 }
 
 func (p *providerLinode) ListImages() ([]*linodeImage, error) {
-	generic, err := p.request(p.createListImagesRequest())
+	generic, err := p.client.DoRequest(p.createListImagesRequest())
 	if err != nil {
 		return nil, err
 	}
@@ -346,7 +346,7 @@ func (p *providerLinode) ListImages() ([]*linodeImage, error) {
 }
 
 func (p *providerLinode) ListStackScripts() ([]*linodeStackScript, error) {
-	generic, err := p.request(p.createListStackScripts())
+	generic, err := p.client.DoRequest(p.createListStackScripts())
 	if err != nil {
 		return nil, err
 	}
@@ -373,15 +373,6 @@ func (p *providerLinode) ListStackScripts() ([]*linodeStackScript, error) {
 		})
 	}
 	return scripts, nil
-}
-
-func (p *providerLinode) request(m *protoapi.Request) (*protoapi.Response, error) {
-	generic, err := p.client.DoRequest(m)
-	if err != nil {
-		log.WithField("cause", err).Error("Fundamental RPC failure")
-		return nil, errors.Wrap(err, "fundamental rpc failure")
-	}
-	return generic, nil
 }
 
 func (p *providerLinode) createAuth() *protoapi.LinodeAuth {
@@ -531,7 +522,7 @@ func (p *providerLinode) logError(msg string, errObject *protoapi.LinodeError, f
 	if len(f) > 0 {
 		for k, v := range f[0] {
 			fields[k] = v
-	}
+		}
 	}
 
 	if hpErr := errObject.GetError(); hpErr != nil && len(hpErr.Message) > 0 {
