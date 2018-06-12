@@ -527,26 +527,28 @@ func (p *providerLinode) logInstance(instance *protoapi.LinodeInstance, msg stri
 }
 
 func (p *providerLinode) logError(msg string, errObject *protoapi.LinodeError, f ...log.Fields) {
-	var fields log.Fields
+	fields := log.Fields{}
 	if len(f) > 0 {
-		fields = f[0]
-	} else {
-		fields = log.Fields{}
+		for k, v := range f[0] {
+			fields[k] = v
+	}
 	}
 
 	if hpErr := errObject.GetError(); hpErr != nil && len(hpErr.Message) > 0 {
 		fields["server-error"] = hpErr.Message
 		log.WithFields(fields).Error(msg)
-	} else {
-		log.WithFields(fields).Error(msg)
 	}
-	for _, err := range errObject.GetDetails() {
-		if err == nil {
-			continue
+
+	if len(errObject.Details) == 1 {
+		fields["cause"] = errObject.Details[0].Reason
+		log.WithFields(fields).Error(msg)
+	} else {
+		for i, err := range errObject.GetDetails() {
+			log.WithFields(log.Fields{
+				"field":  err.Field,
+				"reason": err.Reason,
+			}).Errorf("Multiple errors. Error #%d", i)
 		}
-		log.WithFields(log.Fields{
-			"field-name": err.Field,
-		}).Error("Error reason: " + err.Reason)
 	}
 }
 
