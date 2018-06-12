@@ -65,7 +65,7 @@ func saveSessionCache(cache *sessionCache, runtimeDir string) error {
 
 func clearSessionCache(runtimeDir string) error {
 	filename := sessionCacheFilename(runtimeDir)
-	if err := os.Remove(filename); err != nil {
+	if err := os.Remove(filename); err != nil && !os.IsNotExist(err) {
 		log.WithFields(log.Fields{
 			"cause":    err,
 			"filename": filename,
