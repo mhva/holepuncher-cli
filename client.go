@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"protoapi"
 	"protocore"
+	"reflect"
+	"strings"
 
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
@@ -75,33 +77,53 @@ func (c *holepuncherClient) DoRequest(m *protoapi.Request) (*protoapi.Response, 
 
 	response, err := c.client.Get(requestURL)
 	if err != nil {
+		log.WithFields(log.Fields{
+			"rpc":   c.reflectRPCName(m),
+			"cause": err,
+		}).Error("I/O error during RPC")
 		return nil, err
 	}
 	defer response.Body.Close()
 
-	// HTTP 418 (I'm teapot) is used to indicate protobuf error, we pass it
-	// back to the caller like a normal response.
-	if (response.StatusCode < 200 || response.StatusCode > 299) &&
-		response.StatusCode != http.StatusTeapot {
-		body, err := ioutil.ReadAll(response.Body)
-		if err != nil {
-			errFmt := "server returned an error (%d); couldn't retrieve error because: %s"
-			return nil, errors.Errorf(errFmt, response.StatusCode, err.Error())
-		}
-		errFmt := "server returned error (%d): %s"
-		return nil, errors.Errorf(errFmt, response.StatusCode, string(body))
-	}
-
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		return nil, errors.Errorf("unable to read response body: %s", err.Error())
+		log.WithFields(log.Fields{
+			"rpc":    c.reflectRPCName(m),
+			"cause":  err,
+			"status": response.StatusCode,
+		}).Error("I/O error during RPC")
+		return nil, err
+	}
+
+	if response.StatusCode < 200 || response.StatusCode > 299 {
+		// Bail out on text/plain failures by logging the error and returning.
+		// Protobuf errors will be passed back to the caller.
+		if strings.ToLower(response.Header.Get("Content-Type")) == "text/plain" {
+			cause := string(body)
+			log.WithFields(log.Fields{
+				"rpc":   c.reflectRPCName(m),
+				"cause": cause,
+			}).Error("Early RPC failure")
+			return nil, errors.New(cause)
+		}
 	}
 
 	responseMsg := &protoapi.Response{}
 	if err = c.proto.ReadMessage(responseMsg, body); err != nil {
-		return nil, errors.Errorf("unable to decode protobuf response: %s", err.Error())
+		log.WithFields(log.Fields{
+			"rpc":   c.reflectRPCName(m),
+			"cause": err,
+		}).Error("RPC return value could not be decoded")
+		return nil, err
 	}
 	return responseMsg, nil
+}
+
+func (c *holepuncherClient) reflectRPCName(m *protoapi.Request) string {
+	if msgType := reflect.TypeOf(m.R); msgType != nil && msgType.Kind() == reflect.Ptr {
+		return msgType.Elem().PkgPath() + "." + msgType.Elem().Name()
+	}
+	return "nil"
 }
 
 func decodeProtobufKey(key string, keyName string) ([]byte, error) {
