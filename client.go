@@ -98,7 +98,8 @@ func (c *holepuncherClient) DoRequest(m *protoapi.Request) (*protoapi.Response, 
 	if response.StatusCode < 200 || response.StatusCode > 299 {
 		// Bail out on text/plain failures by logging the error and returning.
 		// Protobuf errors will be passed back to the caller.
-		if strings.ToLower(response.Header.Get("Content-Type")) == "text/plain" {
+		if strings.ToLower(response.Header.Get("Content-Type")) == "text/plain" ||
+			strings.HasPrefix(response.Header.Get("Content-Type"), "text/plain;") {
 			cause := string(body)
 			log.WithFields(log.Fields{
 				"rpc":   c.reflectRPCName(m),
