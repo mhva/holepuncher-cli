@@ -67,6 +67,9 @@ func handleCreateTunnelCommand(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
+	if err = verifySessionCacheIsWritable(options.Runtime.RuntimeDir); err != nil {
+		return err
+	}
 	result, err := provider.CreateTunnel()
 	if err != nil {
 		return err
@@ -160,6 +163,9 @@ func handleRebuildLinodeTunnel(c *cli.Context) error {
 	// FIXME: creating programOptions twice (here and within doLinodeRPC).
 	options, err := newProgramOptions(c.GlobalString("config"))
 	if err != nil {
+		return err
+	}
+	if err = verifySessionCacheIsWritable(options.Runtime.RuntimeDir); err != nil {
 		return err
 	}
 

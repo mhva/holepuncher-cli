@@ -74,3 +74,21 @@ func clearSessionCache(runtimeDir string) error {
 	}
 	return nil
 }
+
+func verifySessionCacheIsWritable(runtimeDir string) error {
+	dirInfo, err := os.Stat(runtimeDir)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"cause": err,
+			"dir":   runtimeDir,
+		}).Error("Couldn't stat runtime directory")
+		return err
+	}
+	if !dirInfo.IsDir() {
+		log.WithFields(log.Fields{
+			"cause": "not a directory",
+			"dir":   runtimeDir,
+		}).Error("Couldn't validate runtime dir")
+	}
+	return nil
+}
