@@ -124,6 +124,11 @@ func handlePrintSessionVarCommand(c *cli.Context, sessionVar string) error {
 	}
 
 	switch sessionVar {
+	case "acct.username":
+		fmt.Println(session.CreationParams.RegularUserName)
+	case "acct.password":
+		fmt.Println(session.CreationParams.RegularUserPassword)
+
 	case "ipv4":
 		fmt.Println(strings.Join(session.InstanceInfo.IPv4, "\n"))
 	case "ipv6":
@@ -304,6 +309,20 @@ func main() {
 			Name:  "var",
 			Usage: "print variable from current session",
 			Subcommands: []cli.Command{
+				{
+					Name:  "acct.username",
+					Usage: "name of regular user account",
+					Action: func(c *cli.Context) error {
+						return handlePrintSessionVarCommand(c, "acct.username")
+					},
+				},
+				{
+					Name:  "acct.password",
+					Usage: "password of regular user account",
+					Action: func(c *cli.Context) error {
+						return handlePrintSessionVarCommand(c, "acct.password")
+					},
+				},
 				{
 					Name:  "ipv4",
 					Usage: "list of ipv4 addresses separated by newline (LF)",

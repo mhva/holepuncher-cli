@@ -17,6 +17,9 @@ const (
 )
 
 type tunnelCreationParams struct {
+	RegularUserName     string `json:"regular_user_name"`
+	RegularUserPassword string `json:"regular_user_password"`
+
 	WireGuardEnabled   bool     `json:"wireguard_enabled"`
 	WireGuardServerKey string   `json:"wireguard_server_key,omitempty"`
 	WireGuardPeerKeys  []string `json:"wireguard_peer_keys,omitempty"`
@@ -88,7 +91,10 @@ func newCloudProviderFromOptions(options *programOptions) (aCloudProvider, error
 }
 
 func creationParamsFromProgramOptions(options *programOptions) tunnelCreationParams {
-	params := tunnelCreationParams{}
+	params := tunnelCreationParams{
+		RegularUserName:     options.NormalUser.UserName,
+		RegularUserPassword: options.NormalUser.Password,
+	}
 	if options.WireGuard.Enable {
 		params.WireGuardEnabled = options.WireGuard.Enable
 		params.WireGuardServerKey = options.WireGuard.ServerKey
